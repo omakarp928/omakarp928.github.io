@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+ <head>
+<script async
+src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8930850156116775"
+crossorigin="anonymous"></script>
+  
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mind Challenge</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:15px;font-family:Arial,sans-serif;background:#eef3ff;color:#18233a;text-align:center}
+.container{max-width:600px;margin:auto}
+.card{background:white;padding:20px;margin:15px 0;border-radius:16px;box-shadow:0 3px 12px #ccd4e5}
+h1{color:#315bd6}
+button,select{padding:12px;margin:6px;border:0;border-radius:9px;font-size:16px}
+button{background:#315bd6;color:white;cursor:pointer}
+button:disabled{opacity:.6}
+.option{display:block;width:100%;background:#edf1ff;color:#18233a;text-align:left}
+.option:hover{background:#d9e2ff}
+#game,#result{display:none}
+#progress{height:10px;background:#ddd;border-radius:10px;overflow:hidden}
+#bar{height:10px;width:0;background:#315bd6}
+footer{font-size:13px;color:#667}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🧠 Mind Challenge</h1>
+<p>Think • Answer • Win</p>
+
+<div class="card">
+<label id="languageLabel">भाषा चुनें:</label><br>
+<select id="language" onchange="changeLanguage()">
+<option value="hi">हिंदी</option>
+<option value="en">English</option>
+<option value="mr">मराठी</option>
+</select>
+</div>
+
+<div id="home" class="card">
+<h2 id="welcome">Mind Challenge में आपका स्वागत है!</h2>
+<p id="choose">अपना Quiz चुनें</p>
+<button onclick="start('logic')" id="logicBtn">🧩 Logic</button>
+<button onclick="start('math')" id="mathBtn">➗ Math</button>
+<button onclick="start('riddle')" id="riddleBtn">💡 Riddles</button>
+<button onclick="start('mixed')" id="mixedBtn">⚡ Mixed Quiz</button>
+<p id="bestLabel">आपका Best Score:</p>
+<strong id="best">0</strong>
+</div>
+
+<div id="game" class="card">
+<p id="counter"></p>
+<p>⏱️ <span id="timer">20</span></p>
+<div id="progress"><div id="bar"></div></div>
+<h3 id="question"></h3>
+<div id="options"></div>
+<p id="feedback"></p>
+<button id="next" onclick="nextQuestion()">Next ➡️</button>
+</div>
+
+<div id="result" class="card">
+<h2 id="resultTitle">आपका रिजल्ट</h2>
+<h1 id="score"></h1>
+<p id="message"></p>
+<p id="bestResult"></p>
+<button onclick="goHome()" id="again">Play Again</button>
+</div>
+
+<div class="card">
+<h3 id="aboutTitle">About Us</h3>
+<p id="aboutText">Mind Challenge एक मनोरंजक Quiz Game है।</p>
+<h3 id="contactTitle">Contact Us</h3>
+<p>ompanchal766@gmail.com</p>
+<h3 i<footerd="supportTitle">Support Us ❤️</h3>
+<a href="https://buymeacoffee.com/ompanchal70" target="_blank">Support Mind Challenge</a>
+</div>
+
+
+ 
+<footer style="text-align:center; padding:20px;">
+  © 2026 Mind Challenge | Play • Learn • Improve
+
+  <p>
+    <a href="about.html">About Us</a> |
+    <a href="contact.html">Contact Us</a> |
+    <a href="privacy.html">Privacy Policy</a> |
+    <a href="terms.html">Terms & Conditions</a> |
+    <a href="disclaimer.html">Disclaimer</a>
+  </p>
+</footer>
+ 
+</div>
+
+<script>
+let lang="hi",questions=[],index=0,points=0;
+let seconds=20,clock=null,locked=false;
+
+const words={
+hi:{
+welcome:"Mind Challenge में आपका स्वागत है!",
+choose:"अपना Quiz चुनें",logic:"🧩 Logic",math:"➗ Math",
+riddle:"💡 पहेलियाँ",mixed:"⚡ Mixed Quiz",
+best:"आपका Best Score:",question:"सवाल",next:"अगला सवाल ➡️",
+correct:"सही जवाब! 🎉",wrong:"गलत जवाब!",result:"आपका रिजल्ट",
+again:"फिर खेलें",about:"मनोरंजन के लिए Quiz Game।",
+excellent:"शानदार! आप बहुत अच्छा खेले।",
+good:"अच्छा प्रयास! फिर कोशिश करें।",
+poor:"कोई बात नहीं! दोबारा खेलें।",
+bestResult:"Best Score:"
+},
+en:{
+welcome:"Welcome to Mind Challenge!",
+choose:"Choose Your Quiz",logic:"🧩 Logic",math:"➗ Math",
+riddle:"💡 Riddles",mixed:"⚡ Mixed Quiz",
+best:"Your Best Score:",question:"Question",next:"Next ➡️",
+correct:"Correct Answer! 🎉",wrong:"Wrong Answer!",
+result:"Your Result",again:"Play Again",
+about:"A fun quiz game for entertainment.",
+excellent:"Excellent! Great job.",
+good:"Good effort! Try again.",
+poor:"Keep practicing!",
+bestResult:"Best Score:"
+},
+mr:{
+welcome:"Mind Challenge मध्ये तुमचे स्वागत आहे!",
+choose:"तुमची प्रश्नमंजुषा निवडा",
+logic:"🧩 तर्कशक्ती",math:"➗ गणित",
+riddle:"💡 कोडी",mixed:"⚡ मिश्र प्रश्नमंजुषा",
+best:"तुमचा सर्वोत्तम स्कोअर:",
+question:"प्रश्न",next:"पुढील प्रश्न ➡️",
+correct:"बरोबर उत्तर! 🎉",wrong:"चुकीचे उत्तर!",
+result:"तुमचा निकाल",again:"पुन्हा खेळा",
+about:"मनोरंजनासाठी एक प्रश्नमंजुषा खेळ.",
+excellent:"उत्तम! तुम्ही खूप छान खेळलात.",
+good:"छान प्रयत्न! पुन्हा प्रयत्न करा.",
+poor:"काही हरकत नाही! पुन्हा खेळा.",
+bestResult:"सर्वोत्तम स्कोअर:"
+}
+};
+
+// प्रत्येक प्रश्न: हिंदी, इंग्रजी, मराठी,
+// हिंदी पर्याय, इंग्रजी पर्याय, मराठी पर्याय, योग्य उत्तर क्रमांक
+
+const data={
+logic:[
+["एक किलो रूई और एक किलो लोहा, कौन भारी?","Which is heavier: 1 kg cotton or 1 kg iron?","एक किलो कापूस आणि एक किलो लोखंड, यापैकी जड कोण? ",["रूई","लोहा","दोनों बराबर","पता नहीं"],["Cotton","Iron","Both equal","Not sure"],["कापूस","लोखंड","दोन्ही समान","माहित नाही"],2],
+["दौड़ में दूसरे नंबर वाले को पीछे छोड़ा। अब आप किस नंबर पर हैं?","You pass the runner in second place. What place are you in?","शर्यतीत दुसऱ्या क्रमांकाच्या धावपटूला मागे टाकले. आता तुम्ही कितव्या क्रमांकावर? ",["पहले","दूसरे","तीसरे","चौथे"],["First","Second","Third","Fourth"],["पहिले","दुसरे","तिसरे","चौथे"],1],
+["किस महीने में 28 दिन होते हैं?","Which month has 28 days?","कोणत्या महिन्यात 28 दिवस असतात?",["फरवरी","जनवरी","सभी महीने","जून"],["February","January","All months","June"],["फेब्रुवारी","जानेवारी","सर्व महिने","जून"],2],
+["चार बिल्लियों के चार पैर, कुल कितने पैर?","Four cats have how many legs?","चार मांजरांचे एकूण किती पाय?",["8","12","16","20"],["8","12","16","20"],["8","12","16","20"],2],
+["दो पिता और दो बेटे बाजार गए। कुल कितने लोग?","Two fathers and two sons went shopping. How many people?","दोन वडील आणि दोन मुलगे बाजारात गेले. एकूण किती लोक?",["2","3","4","5"],["2","3","4","5"],["2","3","4","5"],1],
+["एक पेड़ पर 5 पक्षी थे, एक उड़ गया। कितने बचे?","There were 5 birds on a tree. One flew away. How many remain?","झाडावर 5 पक्षी होते. एक उडून गेला. किती उरले?",["4","5","3","1"],["4","5","3","1"],["4","5","3","1"],0],
+["ऐसी कौन सी चीज है जो टूटने पर काम आती है?","What becomes useful when broken?","कोणती गोष्ट फोडल्यावर उपयोगी पडते?",["कांच","अंडा","पत्थर","कागज"],["Glass","Egg","Stone","Paper"],["काच","अंडे","दगड","कागद"],1],
+["एक दर्जन में कितनी चीजें होती हैं?","How many items are in a dozen?","एका डझनमध्ये किती वस्तू असतात?",["10","11","12","13"],["10","11","12","13"],["10","11","12","13"],2],
+["आपके पास 3 आम हैं, आपने 2 खा लिए। कितने बचे?","You have 3 mangoes and eat 2. How many are left?","तुमच्याकडे 3 आंबे आहेत. 2 खाल्ले. किती उरले?",["1","2","3","5"],["1","2","3","5"],["1","2","3","5"],0],
+["ऐसी कौन सी चीज है जो ऊपर जाती है लेकिन नीचे नहीं आती?","What goes up but never comes down?","कोणती गोष्ट वर जाते पण खाली येत नाही?",["उम्र","गेंद","पतंग","पानी"],["Age","Ball","Kite","Water"],["वय","चेंडू","पतंग","पाणी"],0]
+ ["एक साल में कितने महीने होते हैं?","How many months are in a year?","एका वर्षात किती महिने असतात?",["10","11","12","13"],["10","11","12","13"],["10","11","12","13"],2],
+["किस चीज की गर्दन होती है लेकिन सिर नहीं?","What has a neck but no head?","कशाला मान असते पण डोके नसते?",["बोतल","कुर्सी","मेज","जूता"],["Bottle","Chair","Table","Shoe"],["बाटली","खुर्ची","टेबल","बूट"],0],
+["एक सप्ताह में कितने दिन होते हैं?","How many days are in a week?","एका आठवड्यात किती दिवस असतात?",["5","6","7","8"],["5","6","7","8"],["5","6","7","8"],2],
+["कौन सा जानवर कूद नहीं सकता?","Which animal cannot jump?","कोणता प्राणी उडी मारू शकत नाही?",["हाथी","बंदर","खरगोश","बिल्ली"],["Elephant","Monkey","Rabbit","Cat"],["हत्ती","माकड","ससा","मांजर"],0],
+["एक हाथ में कितनी उंगलियां होती हैं?","How many fingers are on one hand?","एका हातात किती बोटे असतात?",["4","5","6","7"],["4","5","6","7"],["4","5","6","7"],1],
+["कौन सा दिन सप्ताह के बाद आता है?","What comes after a week?","आठवड्यानंतर काय येते?",["एक दिन","एक महीना","एक साल","एक घंटा"],["A day","A month","A year","An hour"],["एक दिवस","एक महिना","एक वर्ष","एक तास"],1],
+["किस चीज को जितना सुखाओ उतनी गीली होती है?","What gets wetter as it dries?","कोणती वस्तू वाळवताना अधिक ओली होते?",["तौलिया","किताब","कागज","पत्थर"],["Towel","Book","Paper","Stone"],["टॉवेल","पुस्तक","कागद","दगड"],0],
+["एक दर्जन केले में कितने केले होंगे?","How many bananas are in a dozen?","एका डझन केळ्यांमध्ये किती केळी असतात?",["10","11","12","15"],["10","11","12","15"],["10","11","12","15"],2],
+["कौन सा महीना सबसे छोटा होता है?","Which month is the shortest?","सर्वात कमी दिवसांचा महिना कोणता?",["जनवरी","फरवरी","मार्च","अप्रैल"],["January","February","March","April"],["जानेवारी","फेब्रुवारी","मार्च","एप्रिल"],1],
+["अगर आज सोमवार है तो कल कौन सा दिन होगा?","If today is Monday, what day is tomorrow?","आज सोमवार असेल तर उद्या कोणता वार असेल?",["रविवार","मंगलवार","बुधवार","शुक्रवार"],["Sunday","Tuesday","Wednesday","Friday"],["रविवार","मंगळवार","बुधवार","शुक्रवार"],1]
+],
+math:[
+["12 × 3 कितना होता है?","What is 12 × 3?","12 × 3 किती?",["30","36","32","40"],["30","36","32","40"],["30","36","32","40"],1],
+["100 - 25 कितना है?","What is 100 - 25?","100 - 25 किती?",["65","70","75","80"],["65","70","75","80"],["65","70","75","80"],2],
+["9 का वर्ग कितना है?","What is 9 squared?","9 चा वर्ग किती?",["18","72","81","99"],["18","72","81","99"],["18","72","81","99"],2],
+["2, 4, 8, 16 के बाद क्या आएगा?","What comes next: 2, 4, 8, 16?","2, 4, 8, 16 नंतर काय येईल?",["20","24","30","32"],["20","24","30","32"],["20","24","30","32"],3],
+["50 का आधा कितना है?","What is half of 50?","50 चा अर्धा किती?",["20","25","30","35"],["20","25","30","35"],["20","25","30","35"],1],
+["7 + 8 कितना है?","What is 7 + 8?","7 + 8 किती?",["14","15","16","17"],["14","15","16","17"],["14","15","16","17"],1],
+["5 × 5 कितना है?","What is 5 × 5?","5 × 5 किती?",["10","20","25","30"],["10","20","25","30"],["10","20","25","30"],2],
+["100 ÷ 10 कितना है?","What is 100 ÷ 10?","100 ÷ 10 किती?",["5","10","15","20"],["5","10","15","20"],["5","10","15","20"],1],
+["एक घंटे में कितने मिनट होते हैं?","How many minutes are in an hour?","एका तासात किती मिनिटे असतात?",["30","45","60","90"],["30","45","60","90"],["30","45","60","90"],2],
+["15 + 15 कितना है?","What is 15 + 15?","15 + 15 किती?",["20","25","30","35"],["20","25","30","35"],["20","25","30","35"],2]
+["20 - 5 कितना होता है?","What is 20 - 5?","20 - 5 किती?",["10","15","20","25"],["10","15","20","25"],["10","15","20","25"],1],
+["8 × 7 कितना होता है?","What is 8 × 7?","8 × 7 किती?",["48","54","56","64"],["48","54","56","64"],["48","54","56","64"],2],
+["144 ÷ 12 कितना है?","What is 144 ÷ 12?","144 ÷ 12 किती?",["10","11","12","14"],["10","11","12","14"],["10","11","12","14"],2],
+["6 का वर्ग कितना है?","What is 6 squared?","6 चा वर्ग किती?",["12","30","36","42"],["12","30","36","42"],["12","30","36","42"],2],
+["25 + 37 कितना है?","What is 25 + 37?","25 + 37 किती?",["52","62","72","82"],["52","62","72","82"],["52","62","72","82"],1],
+["1000 - 450 कितना है?","What is 1000 - 450?","1000 - 450 किती?",["450","500","550","600"],["450","500","550","600"],["450","500","550","600"],2],
+["20 का तीन चौथाई कितना है?","What is three-fourths of 20?","20 चा तीन चतुर्थांश किती?",["10","12","15","18"],["10","12","15","18"],["10","12","15","18"],2],
+["5 सेमी भुजा वाले वर्ग का परिमाप कितना है?","What is the perimeter of a square with 5 cm sides?","5 सेमी बाजू असलेल्या चौरसाची परिमिती किती?",["10","15","20","25"],["10","15","20","25"],["10","15","20","25"],2],
+["2.5 + 1.5 कितना है?","What is 2.5 + 1.5?","2.5 + 1.5 किती?",["3","3.5","4","4.5"],["3","3.5","4","4.5"],["3","3.5","4","4.5"],2],
+["ढाई घंटे में कितने मिनट होते हैं?","How many minutes are in two and a half hours?","अडीच तासांत किती मिनिटे असतात?",["120","130","150","180"],["120","130","150","180"],["120","130","150","180"],2]
+],
+riddle:[
+["मेरे दांत हैं, पर काट नहीं सकता। मैं कौन?","I have teeth but cannot bite. What am I?","माझे दात आहेत, पण मी चावू शकत नाही. मी कोण?",["शेर","कंघी","कुत्ता","मछली"],["Lion","Comb","Dog","Fish"],["सिंह","कंगवा","कुत्रा","मासा"],1],
+["बिना पंख के उड़ता है और बिना आंखों के रोता है।","Flies without wings and cries without eyes.","पंख नसताना उडतो आणि डोळे नसताना रडतो.",["बादल","पेड़","पत्थर","किताब"],["Cloud","Tree","Stone","Book"],["ढग","झाड","दगड","पुस्तक"],0],
+["जितना निकालो उतना बड़ा होता है। क्या है?","The more you take away, the bigger it gets. What is it?","जितके काढाल तितके मोठे होते. ते काय?",["गड्ढा","पेड़","पानी","घर"],["Hole","Tree","Water","House"],["खड्डा","झाड","पाणी","घर"],0],
+["दूसरे लोग आपका नाम लेते हैं, लेकिन आप खुद नहीं लेते।","Others use your name, but you don't. What is it?","इतर लोक तुमचे नाव घेतात, पण तुम्ही स्वतः घेत नाही. ते काय?",["नाम","उम्र","पैसा","खाना"],["Your name","Age","Money","Food"],["तुमचे नाव","वय","पैसे","अन्न"],0],
+["कई चाबियां हैं, लेकिन ताला नहीं खोलता।","It has many keys but opens no locks.","यात अनेक कळा आहेत, पण कुलूप उघडत नाही.",["ताला","कीबोर्ड","दरवाजा","घड़ी"],["Lock","Keyboard","Door","Clock"],["कुलूप","कीबोर्ड","दरवाजा","घड्याळ"],1],
+["पानी में पैदा होता है और पानी में मर जाता है।","Born in water and dies in water. What is it?","पाण्यात जन्मतो आणि पाण्यातच मरतो. तो काय?",["बर्फ","मछली","पत्थर","पेड़"],["Ice","Fish","Stone","Tree"],["बर्फ","मासा","दगड","झाड"],0],
+["ऐसी कौन सी चीज है जो बोलती नहीं लेकिन जवाब देती है?","What does not speak but answers you?","कोणती गोष्ट बोलत नाही पण उत्तर देते?",["गूंज","किताब","कुर्सी","जूता"],["Echo","Book","Chair","Shoe"],["प्रतिध्वनी","पुस्तक","खुर्ची","बूट"],0],
+["दिन में सोता है और रात में जागता है।","Sleeps during the day and wakes at night.","दिवसा झोपतो आणि रात्री जागा असतो.",["सूरज","चांद","उल्लू","पेड़"],["Sun","Moon","Owl","Tree"],["सूर्य","चंद्र","घुबड","झाड"],2],
+["बिना पैर के चलता है। क्या है?","It moves without legs. What is it?","पाय नसताना चालते. ते काय?",["घड़ी","जूता","कुर्सी","पत्थर"],["Clock","Shoe","Chair","Stone"],["घड्याळ","बूट","खुर्ची","दगड"],0],
+["आपके पास होता है, लेकिन दूसरे लोग ज्यादा इस्तेमाल करते हैं।","It belongs to you, but others use it more.","ते तुमचे आहे, पण इतर लोक त्याचा जास्त वापर करतात.",["आपका नाम","आपका घर","आपका खाना","आपका पैसा"],["Your name","Your house","Your food","Your money"],["तुमचे नाव","तुमचे घर","तुमचे अन्न","तुमचे पैसे"],0],
+["ऐसी कौन सी चीज है जिसके हाथ होते हैं लेकिन ताली नहीं बजा सकती?","What has hands but cannot clap?","अशी कोणती गोष्ट आहे जिला हात आहेत पण ती टाळ्या वाजवू शकत नाही?",["घड़ी","गुड़िया","इंसान","बंदर"],["Clock","Doll","Human","Monkey"],["घड्याळ","बाहुली","माणूस","माकड"],0],
+["ऐसी कौन सी चीज है जो पानी पीते ही मर जाती है?","What dies when it drinks water?","पाणी प्यायल्यावर कोणती गोष्ट मरते?",["पेड़","आग","मछली","पक्षी"],["Tree","Fire","Fish","Bird"],["झाड","आग","मासा","पक्षी"],1],
+["किसके पास आंख है लेकिन वह देख नहीं सकती?","What has an eye but cannot see?","कशाला डोळा आहे पण ते पाहू शकत नाही?",["सुई","बिल्ली","कुत्ता","चिड़िया"],["Needle","Cat","Dog","Bird"],["सुई","मांजर","कुत्रा","पक्षी"],0],
+["ऐसी कौन सी चीज है जो हमेशा आपके सामने रहती है लेकिन दिखाई नहीं देती?","What is always ahead of you but cannot be seen?","कोणती गोष्ट नेहमी तुमच्या पुढे असते पण दिसत नाही?",["भविष्य","पेड़","घर","किताब"],["Future","Tree","House","Book"],["भविष्य","झाड","घर","पुस्तक"],0],
+["कौन सी चीज बिना पैरों के दौड़ती है?","What runs without legs?","कोणती गोष्ट पाय नसताना धावते?",["पानी","कुर्सी","पत्थर","किताब"],["Water","Chair","Stone","Book"],["पाणी","खुर्ची","दगड","पुस्तक"],0],
+["ऐसी कौन सी चीज है जिसे जितना बांटो उतनी बढ़ती है?","What grows when you share it?","कोणती गोष्ट वाटल्याने वाढते?",["पैसा","ज्ञान","नमक","पानी"],["Money","Knowledge","Salt","Water"],["पैसा","ज्ञान","मीठ","पाणी"],1],
+["किसके पास शहर हैं लेकिन घर नहीं, नदियां हैं लेकिन पानी नहीं?","What has cities but no houses and rivers but no water?","कशावर शहरे आहेत पण घरे नाहीत, नद्या आहेत पण पाणी नाही?",["नक्शा","किताब","घड़ी","कंप्यूटर"],["Map","Book","Clock","Computer"],["नकाशा","पुस्तक","घड्याळ","संगणक"],0],
+["ऐसी कौन सी चीज है जो ऊपर से नीचे आती है लेकिन नीचे से ऊपर नहीं जाती?","What comes down but never goes up?","कोणती गोष्ट वरून खाली येते पण पुन्हा वर जात नाही?",["बारिश","पतंग","गेंद","धुआं"],["Rain","Kite","Ball","Smoke"],["पाऊस","पतंग","चेंडू","धूर"],0],
+["किस चीज की एक आंख होती है लेकिन वह देख नहीं सकती?","What has one eye but cannot see?","कशाला एक डोळा असतो पण ते पाहू शकत नाही?",["सुई","मछली","बिल्ली","उल्लू"],["Needle","Fish","Cat","Owl"],["सुई","मासा","मांजर","घुबड"],0],
+["ऐसी कौन सी चीज है जो बिना आवाज किए सब कुछ बता देती है?","What tells you everything without making a sound?","कोणती गोष्ट आवाज न करता सर्व काही सांगते?",["किताब","ढोल","घंटी","रेडियो"],["Book","Drum","Bell","Radio"],["पुस्तक","ढोल","घंटा","रेडिओ"],0]
+] 
+};
+
+function changeLanguage(){
+ lang=document.getElementById("language").value;
+ const w=words[lang];
+ document.getElementById("welcome").innerText=w.welcome;
+ document.getElementById("choose").innerText=w.choose;
+ document.getElementById("logicBtn").innerText=w.logic;
+ document.getElementById("mathBtn").innerText=w.math;
+ document.getElementById("riddleBtn").innerText=w.riddle;
+ document.getElementById("mixedBtn").innerText=w.mixed;
+ document.getElementById("bestLabel").innerText=w.best;
+ document.getElementById("next").innerText=w.next;
+ document.getElementById("resultTitle").innerText=w.result;
+ document.getElementById("again").innerText=w.again;
+ document.getElementById("aboutText").innerText=w.about;
+ document.getElementById("aboutTitle").innerText="About Us";
+ document.getElementById("best").innerText=localStorage.getItem("mindBest")||0;
+ if(document.getElementById("game").style.display==="block") showQuestion();
+}
+
+function start(type){
+ clearInterval(clock);
+ if(type==="mixed"){
+  questions=[
+ ...data.logic,
+ ...data.math,
+ ...data.riddle
+];
+ }else{
+  questions=[...data[type]];
+ }
+ index=0;points=0;
+ document.getElementById("home").style.display="none";
+ document.getElementById("result").style.display="none";
+ document.getElementById("game").style.display="block";
+ showQuestion();
+}
+
+function showQuestion(){
+ clearInterval(clock);
+ locked=false;seconds=20;
+ const q=questions[index];
+ const qIndex={hi:0,en:1,mr:2}[lang];
+ const optIndex={hi:3,en:4,mr:5}[lang];
+ document.getElementById("counter").innerText=
+ words[lang].question+" "+(index+1)+"/"+questions.length;
+ document.getElementById("timer").innerText=seconds;
+ document.getElementById("question").innerText=q[qIndex];
+ document.getElementById("feedback").innerText="";
+ document.getElementById("bar").style.width=(index/questions.length*100)+"%";
+ const box=document.getElementById("options");
+ box.innerHTML="";
+ q[optIndex].forEach((option,i)=>{
+  const btn=document.createElement("button");
+  btn.className="option";
+  btn.innerText=option;
+  btn.onclick=()=>answer(i);
+  box.appendChild(btn);
+ });
+ clock=setInterval(()=>{
+  seconds--;
+  document.getElementById("timer").innerText=seconds;
+  if(seconds<=0){
+   clearInterval(clock);
+   if(!locked) answer(-1);
+  }
+ },1000);
+}
+
+function answer(choice){
+ if(locked)return;
+ locked=true;
+ clearInterval(clock);
+ if(choice===questions[index][6]){
+  points++;
+  document.getElementById("feedback").innerText=words[lang].correct;
+ }else{
+  document.getElementById("feedback").innerText=words[lang].wrong;
+ }
+ document.querySelectorAll(".option").forEach((b,i)=>{
+  b.disabled=true;
+  if(i===questions[index][6]) b.style.background="#b8efc2";
+ });
+}
+
+function nextQuestion(){
+ if(!locked)return;
+ if(index<questions.length-1){
+  index++;
+  showQuestion();
+ }else{
+  finish();
+ }
+}
+
+function finish(){
+ clearInterval(clock);
+ document.getElementById("game").style.display="none";
+ document.getElementById("result").style.display="block";
+ document.getElementById("score").innerText=points+"/"+questions.length;
+ let best=Number(localStorage.getItem("mindBest")||0);
+ if(points>best){
+  best=points;
+  localStorage.setItem("mindBest",best);
+ }
+ document.getElementById("bestResult").innerText=words[lang].bestResult+" "+best;
+ document.getElementById("message").innerText=
+ points>=questions.length*.8?words[lang].excellent:
+ points>=questions.length*.5?words[lang].good:words[lang].poor;
+}
+
+function goHome(){
+ clearInterval(clock);
+ document.getElementById("result").style.display="none";
+ document.getElementById("game").style.display="none";
+ document.getElementById("home").style.display="block";
+ document.getElementById("best").innerText=localStorage.getItem("mindBest")||0;
+}
+
+changeLanguage();
+</script>
+</body>
+ 
+<section id="privacy-policy" style="padding:20px; max-width:800px; margin:auto; line-height:1.7;">
+  <h2>🔒 Privacy Policy</h2>
+  <p>Welcome to Mind Challenge. Your privacy is important to us.</p>
+
+  <h3>Information We Collect</h3>
+  <p>We do not ask users to provide personal information to play quizzes.</p>
+
+  <h3>Cookies and Advertising</h3>
+  <p>Third-party services such as Google may use cookies to show advertisements and improve their services.</p>
+
+  <h3>Google AdSense</h3>
+  <p>We may use Google AdSense to display advertisements. Google may use cookies to show ads based on visits to this and other websites.</p>
+
+  <h3>Children's Privacy</h3>
+  <p>Mind Challenge is an entertainment quiz website. Please do not share personal information while using the website.</p>
+
+  <h3>Contact Us</h3>
+  <p>Email: ompanchal766@gmail.com</p>
+
+  <p>Last updated: November 23, 2026</p>
+</section>
+ 
+<section id="terms-conditions" style="padding:20px; max-width:800px; margin:auto; line-height:1.7;">
+  <h2>📜 Terms & Conditions</h2>
+
+  <p>Welcome to Mind Challenge. By using this website, you agree to these terms.</p>
+
+  <h3>1. Website Purpose</h3>
+  <p>Mind Challenge is an entertainment and educational quiz website.</p>
+
+  <h3>2. Quiz Results</h3>
+  <p>Quiz scores are for entertainment only. They are not a scientific IQ test or professional assessment.</p>
+
+  <h3>3. Fair Use</h3>
+  <p>Please use this website responsibly. Do not misuse, damage, or attempt to disrupt the website.</p>
+
+  <h3>4. Content</h3>
+  <p>Quiz questions and website content are provided for learning and entertainment. Please do not copy or republish our content without permission.</p>
+
+  <h3>5. Changes</h3>
+  <p>We may update these terms when needed.</p>
+
+ 
+
+  <p>Last updated: November 23, 2026</p>
+</section>
+
+<section id="disclaimer" style="padding:20px; max-width:800px; margin:auto; line-height:1.7;">
+  <h2>⚠️ Disclaimer</h2>
+
+  <p>Mind Challenge is an entertainment and educational quiz website.</p>
+
+  <p>All quiz scores are for fun and learning purposes only. They do not represent a scientific IQ score or professional evaluation.</p>
+
+  <p>We try to provide accurate questions and answers, but we do not guarantee that all content is error-free.</p>
+
+  <p>Third-party advertisements may appear on this website in the future.</p>
+
+
+  <p>Last updated: November 23, 2026</p>
+</section>
+ 
+</html>
