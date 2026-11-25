@@ -396,22 +396,34 @@ function showQuestion(){
  },1000);
 }
 
+
 function answer(choice){
  if(locked)return;
  locked=true;
  clearInterval(clock);
+
  if(choice===questions[index][6]){
   points++;
   document.getElementById("feedback").innerText=words[lang].correct;
  }else{
   document.getElementById("feedback").innerText=words[lang].wrong;
  }
+
  document.querySelectorAll(".option").forEach((b,i)=>{
   b.disabled=true;
   if(i===questions[index][6]) b.style.background="#b8efc2";
  });
-}
 
+ setTimeout(()=>{
+  if(index<questions.length-1){
+   index++;
+   showQuestion();
+  }else{
+   finish();
+  }
+ },1000);
+}
+ 
 function nextQuestion(){
  if(!locked)return;
  if(index<questions.length-1){
